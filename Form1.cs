@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Conversor_de_Medidas
 {
@@ -18,26 +19,25 @@ namespace Conversor_de_Medidas
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            comboBox1.Sorted = true;
-        }
-
+        Selecionado selecionado = new Selecionado();
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
-            string selecionar = comboBox1.SelectedItem.ToString();
+            selecionado.SCB1 = comboBox1.SelectedItem.ToString();
 
             if (comboBox1.SelectedIndex >= 0)
             {
                 comboBox2.Enabled = true;
-                textBoxC2.Enabled = true;
+                textBoxCB2.Enabled = true;
             }
+
+
+            // Agora você pode usar minhaVariavel com o valor atribuído
+
 
             // adiciona os itens na comboBox2 de acordo com o item selecionado pelo usuário na comboBox1.
 
-            switch (selecionar)
+            switch (selecionado.SCB1)
             {
 
                 // adiciona itens de grandeza temperatura.
@@ -45,6 +45,7 @@ namespace Conversor_de_Medidas
                 case "Temperatura":
 
                     comboBox2.Items.Clear();
+                    comboBox3.Items.Clear();
                     comboBox2.Sorted = true;
 
                     comboBox2.Items.Add("Celsius");
@@ -58,6 +59,7 @@ namespace Conversor_de_Medidas
                 case "Tempo":
 
                     comboBox2.Items.Clear();
+                    comboBox3.Items.Clear();
                     comboBox2.Sorted = false;
 
                     comboBox2.Items.Add("Ano");
@@ -73,6 +75,7 @@ namespace Conversor_de_Medidas
                 case "Comprimento":
 
                     comboBox2.Items.Clear();
+                    comboBox3.Items.Clear();
                     comboBox2.Sorted = false;
 
                     comboBox2.Items.Add("Quilômetro");
@@ -88,8 +91,6 @@ namespace Conversor_de_Medidas
             }
         }
 
-        string selecionadoCB2;
-
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
 
@@ -98,10 +99,9 @@ namespace Conversor_de_Medidas
             if (comboBox2.SelectedIndex >= 0)
             {
                 comboBox3.Enabled = true;
-                textBoxC3.Enabled = true;
+                textBoxCB3.Enabled = true;
             }
 
-            string selecionadoCB2 = comboBox2.SelectedItem.ToString();
 
             // Garantia de que todos os itens presentes na comboBox1, menos o item selecionado, sejam copiados para comboBox2.
 
@@ -116,7 +116,7 @@ namespace Conversor_de_Medidas
             }
         }
 
-        private void textBoxC3_KeyPress(object sender, KeyPressEventArgs e)
+        private void textBoxCB2_KeyPress(object sender, KeyPressEventArgs e)
         {
 
             // verifica se os caracteres digitados pelo usuário são números, se não forem, são bloqueados de serem inseridos.
@@ -128,7 +128,7 @@ namespace Conversor_de_Medidas
             }
         }
 
-        private void textBoxC2_KeyPress(object sender, KeyPressEventArgs e)
+        private void textBoxCB3_KeyPress(object sender, KeyPressEventArgs e)
         {
 
             // verifica se os caracteres digitados pelo usuário são números, se não forem, são bloqueados de serem inseridos.
@@ -140,7 +140,7 @@ namespace Conversor_de_Medidas
             }
         }
 
-        private void textBoxC2_TextChanged(object sender, EventArgs e)
+        private void textBoxCB2_TextChanged(object sender, EventArgs e)
         {
 
             // tranfere para uma variável o nome do item selecionado pelo usuário no comboBox1.
@@ -159,98 +159,88 @@ namespace Conversor_de_Medidas
 
                     string ConversorTemperatura = comboBox2.SelectedItem.ToString();
 
+                    double ValorTemperatura = 0.0;
+
                     switch (ConversorTemperatura)
                     {
                         case "Celsius":
 
-                            double temperaturaCelsius = 0.0;
+                            Celsius celsius = new Celsius();
+                            double resultado = 0.0;
 
-                            if (string.IsNullOrEmpty(textBoxC2.Text))
+                            if (double.TryParse(textBoxCB2.Text, out ValorTemperatura))
                             {
-                                textBoxC2.Text = "";
-                                textBoxC3.Text = "";
+                                if (comboBox3.SelectedItem.ToString() == "Kelvin")
+                                {
+                                    resultado = celsius.Kelvin(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{resultado}";
+                                }
+                                else if (comboBox3.SelectedItem.ToString() == "Fahrenheit")
+                                {
+                                    resultado = celsius.Fahrenheit(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{resultado}";
+                                }
                             }
-                            else if (comboBox3.SelectedItem.ToString() == "Kelvin")
+                            else
                             {
-                                temperaturaCelsius = double.Parse(textBoxC2.Text);
-                                double resultadoCCelsius = 0.0;
-
-                                resultadoCCelsius = temperaturaCelsius + 273.15;
-
-                                textBoxC3.Text = $"{resultadoCCelsius}K";
-                            }
-                            else if (comboBox3.SelectedItem.ToString() == "Fahrenheit")
-                            {
-
-
-                                temperaturaCelsius = int.Parse(textBoxC2.Text);
-                                double resultadoCFahrenheit = 0.0;
-
-                                resultadoCFahrenheit = (temperaturaCelsius * 1.8) + 32;
-
-                                textBoxC3.Text = $"{resultadoCFahrenheit}F";
-
+                                textBoxCB2.Text = "";
+                                textBoxCB3.Text = "";
                             }
 
-
-                                break;
+                            break;
 
                         case "Fahrenheit":
 
-                            double temperaturaFahrenheit = 0.0;
+                            Fahrenheit fahrenheit = new Fahrenheit();
 
-                            if (string.IsNullOrEmpty(textBoxC2.Text))
+                            if (double.TryParse(textBoxCB2.Text, out ValorTemperatura))
                             {
-                                textBoxC2.Text = "";
-                                textBoxC3.Text = "";
+                                if (comboBox3.SelectedItem.ToString() == "Celsius")
+                                {
+                                    resultado = fahrenheit.Celsius(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{resultado}";
+                                }
+                                else if (comboBox3.SelectedItem.ToString() == "Kelvin")
+                                {
+                                    resultado = fahrenheit.Kelvin(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{Math.Round(resultado, 2)}";
+                                }
                             }
-                            else if (comboBox3.SelectedItem.ToString() == "Celsius")
+                            else
                             {
-                                temperaturaFahrenheit = double.Parse(textBoxC2.Text);
-                                double resultadoCelsius = 0.0;
-
-                                resultadoCelsius = ((temperaturaFahrenheit - 32) * 5/9);
-
-                                textBoxC3.Text = $"{Math.Round(resultadoCelsius)}C";
-                            }
-                            else if (comboBox3.SelectedItem.ToString() == "Kelvin")
-                            {
-                                temperaturaFahrenheit = double.Parse(textBoxC2.Text);
-                                double resultadoFKelvin = 0.0;
-
-                                resultadoFKelvin = ((temperaturaFahrenheit - 32) * 5 / 9) + 273.15;
-
-                                textBoxC3.Text = $"{Math.Round(resultadoFKelvin)}K";
+                                textBoxCB2.Text = "";
+                                textBoxCB3.Text = "";
                             }
 
                             break;
 
                         case "Kelvin":
 
-                            double temperaturaKelvin = 0.0;
+                            Kelvin kelvin = new Kelvin();
 
-                            if (string.IsNullOrEmpty(textBoxC2.Text))
+                            if (double.TryParse(textBoxCB2.Text, out ValorTemperatura))
                             {
-                                textBoxC2.Text = "";
-                                textBoxC3.Text = "";
+                                if (comboBox3.SelectedItem.ToString() == "Celsius")
+                                {
+                                    resultado = kelvin.Celsius(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{resultado}";
+                                }
+                                else if (comboBox3.SelectedItem.ToString() == "Fahrenheit")
+                                {
+                                    resultado = kelvin.Fahrenheit(ValorTemperatura);
+
+                                    textBoxCB3.Text = $"{resultado}";
+                                }
                             }
-                            else if (comboBox3.SelectedItem.ToString() == "Celsius")
+                            else
                             {
-                                temperaturaKelvin = double.Parse(textBoxC2.Text);
-                                double resultadoKCelsius = 0.0;
-
-                                resultadoKCelsius = temperaturaKelvin - 273.15;
-
-                                textBoxC3.Text = $"{Math.Round(resultadoKCelsius, 2)}C";
-                            }
-                            else if (comboBox3.SelectedItem.ToString() == "Fahrenheit")
-                            {
-                                temperaturaKelvin = int.Parse(textBoxC2.Text);
-                                double resultadoKFahrenheit = 0.0;
-
-                                resultadoKFahrenheit = ((temperaturaKelvin - 273.15) * 1.8) + 32;
-
-                                textBoxC3.Text = $"{Math.Round(resultadoKFahrenheit)}F";
+                                textBoxCB2.Text = "";
+                                textBoxCB3.Text = "";
                             }
 
                             break;
@@ -261,86 +251,56 @@ namespace Conversor_de_Medidas
 
                 case "Comprimento":
 
-
-                    double unidadeInicial = comboBox2.SelectedIndex;
-                    double unidadeFinal = 0.0;
-                    string acompanhante = "";
-
-                    if (string.IsNullOrEmpty(textBoxC2.Text))
+                    if (double.TryParse(textBoxCB2.Text, out double comprimento))
                     {
-                        textBoxC2.Text = "";
-                        textBoxC3.Text = "";
-                    }
-                    else if (!string.IsNullOrEmpty(textBoxC2.Text))
-                    {
-                        double ConversorMetro = double.Parse(textBoxC2.Text);
+                        Comprimento unidades = new Comprimento();
+                        unidades.UnidadeInicial = comboBox3.SelectedIndex;
 
-                        switch (comboBox3.SelectedItem)
+                        switch (selecionado.SCB3)
                         {
                             case "Quilômetro":
-
-                                unidadeFinal = 0;
-                                acompanhante = "Km";
+                                unidades.UnidadeFinal = 0;
 
                                 break;
 
                             case "Hectômetro":
-
-                                unidadeFinal = 1;
-                                acompanhante = "Hm";
+                                unidades.UnidadeFinal = 1;
 
                                 break;
 
-                            case "Diâmetro":
-
-                                unidadeFinal = 2;
-                                acompanhante = "dam";
+                            case "Decâmetro":
+                                unidades.UnidadeFinal = 2;
 
                                 break;
 
                             case "Metro":
-
-                                unidadeFinal = 3;
-                                acompanhante = "m";
+                                unidades.UnidadeFinal = 3;
 
                                 break;
 
                             case "Decímetro":
-
-                                unidadeFinal = 4;
-                                acompanhante = "dm";
+                                unidades.UnidadeFinal = 4;
 
                                 break;
 
                             case "Centímetro":
-
-                                unidadeFinal = 5;
-                                acompanhante = "cm";
+                                unidades.UnidadeFinal = 5;
 
                                 break;
 
                             case "Milímetro":
-
-                                unidadeFinal = 6;
-                                acompanhante = "mm";
+                                unidades.UnidadeFinal = 6;
 
                                 break;
                         }
 
-                        double resultadoComprimento = 0.0;
-
-                        double expoente = Math.Abs(unidadeInicial - unidadeFinal);
-
-                        if (unidadeInicial > unidadeFinal)
-                        {
-                            resultadoComprimento = ConversorMetro / Math.Pow(10, expoente);
-                        }
-                        else if (unidadeInicial < unidadeFinal)
-                        {
-                            resultadoComprimento = ConversorMetro * Math.Pow(10, expoente);
-                        }
-
-                        textBoxC3.Text = $"{resultadoComprimento}{acompanhante}";
+                        unidades.Conversao = unidades.Conversor(comprimento);
+                        textBoxCB3.Text = $"{unidades.Conversao}";
+                    }
+                    else
+                    {
+                        textBoxCB2.Text = "";
+                        textBoxCB3.Text = "";
                     }
 
                     break;
